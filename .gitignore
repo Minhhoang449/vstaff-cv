@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+.codebase-memory/
+.codebase-memory.json
+.cursor/
 
 # debug
 npm-debug.log*
@@ -33,9 +36,29 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Firebase service account (never commit)
+*firebase-adminsdk*.json
+**/serviceAccount*.json
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma generated client
+/src/generated/prisma
+
+# embedded local Postgres (PGlite)
+/.data/
+
+# uploaded CV avatars (generated at runtime)
+/public/uploads/avatars/*
+!/public/uploads/avatars/.gitkeep
+
+# raw admin datasets (regenerate via scripts/generate-vietnam-wards.mjs)
+/scripts/all-ward.json
+/scripts/all-province.json
+/scripts/sapnhap2025-vn.json
+/scripts/provinces.generated.json

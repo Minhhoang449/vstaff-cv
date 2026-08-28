@@ -1,0 +1,16 @@
+# Local Postgres for Vstaff.CV (optional — Docker Desktop required)
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vstaff_cv
+    volumes:
+      - vstaff_pg_data:/var/lib/postgresql/data
+
+volumes:
+  vstaff_pg_data:

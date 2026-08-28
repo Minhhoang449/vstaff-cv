@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vstaff.CV — Bước 1
 
-## Getting Started
+Website việc làm (danh sách ứng viên) trên **Next.js App Router** + **shadcn/ui** + **Metadata API**.
 
-First, run the development server:
+## Yêu cầu ổ đĩa
+
+- Project và `node_modules` nằm tại `D:\Web_Code\Vstaff.CV`
+- npm cache: `D:\Web_Code\.npm-cache` (xem `.npmrc`) — tránh làm đầy ổ C
+
+## Chạy local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tài khoản demo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Email | Password | Role |
+|-------|----------|------|
+| employer@demo.local | demo123 | NTD |
+| admin@demo.local | demo123 | Admin |
 
-## Learn More
+## Cấu trúc chính
 
-To learn more about Next.js, take a look at the following resources:
+- `/` — landing
+- `/dashboard/employer/tim-ung-vien` — tìm UV (NTD)
+- `/dashboard/employer/ung-vien/[slug]` — chi tiết hồ sơ (NTD)
+- `/dang-nhap` — Auth.js credentials stub
+- `/dashboard/employer` · `/dashboard/admin` — dashboard NTD / admin
+- `prisma/schema.prisma` — Postgres schema (indexes + EmployerCandidateView)
+- List/search: Prisma khi DB sẵn sàng; fallback in-memory nếu chưa có
+- **Không cần Docker (khuyến nghị trên Windows):**
+  ```powershell
+  npm run db:local:setup
+  npm run db:local:seed
+  npm run db:bench
+  # 100k (chậm hơn):
+  npm run db:local:seed:100k
+  ```
+  Thêm `USE_PGLITE=1` vào `.env` để Next.js dùng DB nhúng `.data/pglite`.
+- **Có Docker Desktop:**
+  ```powershell
+  docker compose up -d
+  npm run db:push
+  npm run db:seed:100k
+  npm run db:bench
+  ```
+  (PowerShell không dùng `SEED_COUNT=100000 npm …` — dùng `npm run db:seed:100k` hoặc `$env:SEED_COUNT=100000; npm run db:seed`)
+- Bench không DB: `npm run db:bench:scale`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## SEO
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `generateMetadata` / root metadata
+- `/sitemap.xml`, `/robots.txt`
+- JSON-LD trên trang chi tiết ứng viên
 
-## Deploy on Vercel
+## Codebase Memory MCP
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Đã gắn MCP cho Cursor:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Binary: `D:\Web_Code\bin\codebase-memory-mcp.exe` (không chiếm ổ C bằng `node_modules`-style install)
+- Project config: `.cursor/mcp.json`
+- Global Cursor: `%USERPROFILE%\.cursor\mcp.json`
+- Project extras: `.codebase-memory.json`
+
+Sau khi sửa MCP config: **Restart Cursor** (hoặc Reload Window), rồi trong chat bảo agent **"Index this project"**.

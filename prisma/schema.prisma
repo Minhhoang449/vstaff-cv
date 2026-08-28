@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  EMPLOYER
+  CANDIDATE
+  ADMIN
+}
+
+enum CandidateGender {
+  male
+  female
+  other
+}
+
+enum JobSeekingStatus {
+  active
+  open
+  passive
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  role            Role     @default(CANDIDATE)
+  passwordHash    String?
+  company         String?
+  accountStatus   String   @default("active") // active | suspended
+  companyProfile  Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  candidateProfile CandidateProfile?
+  employerProfile  EmployerProfile?
+
+  @@index([role])
+}
+
+model CandidateProfile {
+  id               String           @id @default(cuid())
+  userId           String?          @unique
+  user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  slug             String           @unique
+  fullName         String
+  title            String
+  desiredPosition  String
+  location         String
+  provinceCode     String
+  wardCode         String
+  wardName         String
+  industryId       String
+  gender           CandidateGender  @default(other)
+  languages        String[]
+  education        String
+  experienceYears  Int              @default(0)
+  skills           String[]
+  summary          String
+  age              Int              @default(25)
+  salaryExpect     Int              @default(10)
+  workType         String           @default("Toàn thời gian")
+  jobSeekingStatus JobSeekingStatus @default(open)
+  interestCount    Int              @default(0)
+  phone            String           @default("")
+  email            String           @default("")
+  isPublic         Boolean          @default(false)
+  originalFileUrl  String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  views   EmployerCandidateView[]
+  unlocks ContactUnlock[]
+  saves   SavedCandidate[]
+
+  @@index([isPublic, updatedAt(sort: Desc)])
+  @@index([isPublic, interestCount(sort: Desc)])
+  @@index([isPublic, provinceCode, industryId, updatedAt(sort: Desc)])
+  @@index([isPublic, wardCode])
+  @@index([isPublic, jobSeekingStatus, updatedAt(sort: Desc)])
+  @@index([isPublic, gender])
+  @@index([isPublic, education])
+  @@index([isPublic, workType])
+  @@index([isPublic, experienceYears])
+  @@index([desiredPosition])
+}
+
+/// employerId = User.id (Postgres auth)
+model EmployerCandidateView {
+  id          String   @id @default(cuid())
+  employerId  String
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  viewedAt    DateTime @default(now())
+
+  @@unique([employerId, candidateId])
+  @@index([employerId, viewedAt])
+  @@index([candidateId])
+}
+
+model ContactUnlock {
+  id          String   @id @default(cuid())
+  employerId  String
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  unlockedAt  DateTime @default(now())
+
+  @@unique([employerId, candidateId])
+  @@index([employerId, unlockedAt])
+  @@index([candidateId])
+}
+
+model SavedCandidate {
+  id          String   @id @default(cuid())
+  employerId  String
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  savedAt     DateTime @default(now())
+
+  @@unique([employerId, candidateId])
+  @@index([employerId, savedAt])
+  @@index([candidateId])
+}
+
+model EmployerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Gói NTD — employerId = User.id
+model EmployerSubscription {
+  employerId          String    @id
+  planId              String
+  planName            String
+  cvUsed              Int       @default(0)
+  cvLimit             Int?
+  cvUsedToday         Int       @default(0)
+  cvUsageDay          String?
+  activatedAt         DateTime
+  expiresAt           DateTime
+  activationVerified  Boolean   @default(false)
+  lastFreeActivatedAt DateTime?
+  updatedAt           DateTime  @updatedAt
+}
+
+model PaymentOrder {
+  id              String    @id
+  code            String    @unique
+  employerId      String
+  employerEmail   String
+  planId          String
+  planName        String
+  amount          Int
+  originalAmount  Int?
+  promoCode       String?
+  durationDays    Int       @default(0)
+  cvLimit         Int?
+  status          String    @default("pending")
+  createdAt       DateTime  @default(now())
+  paidAt          DateTime?
+  expiresAt       DateTime
+  sepayTxnId      String?
+  transferAmount  Int?
+  gateway         String?
+
+  @@index([employerId, createdAt(sort: Desc)])
+  @@index([status])
+}
+
+model SePayProcessed {
+  id String   @id
+  at DateTime @default(now())
+}
+
+/// Singleton cấu hình nền tảng (id = main)
+model SystemSetting {
+  id                  String   @id @default("main")
+  siteName            String
+  supportEmail        String
+  supportPhone        String
+  allowEmployerSignup Boolean  @default(true)
+  maintenance         Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
+
+model ServicePlan {
+  id            String   @id
+  name          String
+  price         Int
+  durationDays  Int
+  durationLabel String
+  cvLimit       Int?
+  cvLimitLabel  String
+  cvPerDay      Int?
+  highlight     Boolean  @default(false)
+  features      String[]
+  updatedAt     DateTime @updatedAt
+}
+
+model Promotion {
+  id            String   @id
+  badge         String
+  title         String
+  body          String
+  code          String   @unique
+  discountLabel String
+  expiresAt     String
+  status        String
+  sortOrder     Int?
+  usedCount     Int      @default(0)
+  planIds       String[]
+  discountType  String?
+  discountValue Int?
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+}
+
+model DeliveryJob {
+  id                   String   @id
+  employerId           String
+  position             String
+  industryId           String   @default("")
+  provinceCode         String
+  wardCode             String   @default("")
+  gender               String   @default("")
+  language             String   @default("")
+  ageRange             String   @default("")
+  delivery             String
+  notes                String   @default("")
+  status               String   @default("active")
+  matchedCandidateIds  String[]
+  matchedCount         Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  lastRunAt            DateTime?
+
+  @@index([employerId, createdAt(sort: Desc)])
+}
+
+model EmailCampaign {
+  id              String   @id
+  employerId      String
+  employerEmail   String
+  subject         String
+  body            String
+  fromName        String
+  audience        String
+  openedWithin    String?
+  status          String
+  recipientCount  Int      @default(0)
+  sentCount       Int      @default(0)
+  failedCount     Int      @default(0)
+  testMode        Boolean  @default(false)
+  sentAt          DateTime
+  results         Json
+  createdAt       DateTime @default(now())
+
+  @@index([employerId, sentAt(sort: Desc)])
+}

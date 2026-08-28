@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f1ec;
+  --foreground: #14202b;
+  --card: #ffffff;
+  --card-foreground: #14202b;
+  --primary: #0c4452;
+  --primary-foreground: #f3f1ec;
+  --secondary: #e6e2d8;
+  --secondary-foreground: #14202b;
+  --muted: #ebe7de;
+  --muted-foreground: #5a6570;
+  --accent: #b8954a;
+  --accent-foreground: #14202b;
+  --border: #d4cec2;
+  --ring: #0c4452;
+  --radius: 0.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+@keyframes home-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes home-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes home-line-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.home-animate-fade-up {
+  animation: home-fade-up 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-animate-fade-in {
+  animation: home-fade-in 1.1s ease both;
+}
+
+.home-animate-line {
+  transform-origin: left center;
+  animation: home-line-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-animate-fade-up,
+  .home-animate-fade-in,
+  .home-animate-line {
+    animation: none;
+  }
 }
