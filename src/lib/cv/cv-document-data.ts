@@ -1,3 +1,4 @@
+import type { CvEducationDetail, CvExperienceDetail } from "@/data/candidate-upload-schema";
 import { INDUSTRIES } from "@/data/industries";
 import type { CandidateProfile } from "@/lib/candidates-shared";
 import { formatExperienceYears } from "@/lib/candidates-shared";
@@ -6,6 +7,7 @@ import {
   resolveCvTemplateId,
   type CvTemplateTheme,
 } from "@/lib/cv/cv-template-themes";
+import { formatCvBirthDate, formatCvLocationLine } from "@/lib/cv/format-cv-location";
 
 export type { CvTemplateTheme };
 export { cvTemplateLabel, resolveCvTemplateId, getCvTemplateTheme } from "@/lib/cv/cv-template-themes";
@@ -32,7 +34,8 @@ export type VstaffCvDocumentData = {
   locationLine: string;
   phone: string;
   email: string;
-  age: number;
+  /** Ngày sinh hiển thị trên CV Vstaff, vd. "08/11/1994" */
+  dateOfBirth: string;
   summary: string;
   careerObjective: string;
   education: string;
@@ -56,100 +59,82 @@ function industryNameOf(id: string) {
   return INDUSTRIES.find((i) => i.id === id)?.name ?? "Khác";
 }
 
-/** Sinh nội dung CV đủ dài (~2 trang) khi hồ sơ chỉ có field cơ bản (demo/memory). */
-function enrichBlocks(candidate: CandidateProfile): {
-  summary: string;
-  careerObjective: string;
-  educationDetails: CvEducationBlock[];
-  experiences: CvExperienceBlock[];
-  interests: string[];
-  activities: string;
-  skills: string[];
-} {
-  const role = candidate.desiredPosition || candidate.title;
-  const years = Math.max(1, candidate.experienceYears || 1);
-  const industry = industryNameOf(candidate.industryId);
+function isPlaceholder(value?: string | null): boolean {
+  if (!value?.trim()) return true;
+  const v = value.trim().toLowerCase();
+  return v === "n/a" || v === "na" || v === "—" || v === "-";
+}
 
-  const skillExtra: Record<string, string[]> = {
-    "it-software": ["Git", "CI/CD", "REST API", "Agile/Scrum", "Code review"],
-    "it-data": ["SQL", "Python", "Power BI", "A/B testing", "ETL"],
-    marketing: ["SEO", "Google Ads", "Content plan", "Brand", "Analytics"],
-    sales: ["CRM", "Negotiation", "Pipeline", "Presentation", "Cold call"],
-    finance: ["Excel", "Risk", "Credit", "Reporting", "KYC"],
-    design: ["Figma", "UI kit", "Prototyping", "Design system", "User research"],
-    hr: ["Recruitment", "Onboarding", "C&B", "Interview", "Training"],
-  };
+function formatPeriod(start?: string, end?: string): string {
+  const parts = [start, end].filter((p) => p && !isPlaceholder(p));
+  return parts.join(" — ");
+}
 
-  const skills = [
-    ...candidate.skills,
-    ...(skillExtra[candidate.industryId] || ["Làm việc nhóm", "Giao tiếp", "Quản lý thời gian"]),
-  ].filter((v, i, a) => a.indexOf(v) === i);
+function descriptionToBullets(description?: string): string[] {
+  if (!description?.trim()) return [];
+  return description
+    .split(/\r?\n|(?:\.\s+)/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
-  const summary = [
-    candidate.summary?.trim(),
-    `${years}+ năm gắn với lĩnh vực ${industry}, tập trung vào vị trí ${role}.`,
-    "Thành thạo phối hợp cross-team, theo dõi KPI và cải tiến quy trình làm việc thực tế.",
-    "Ưu tiên môi trường minh bạch, đề cao chất lượng bàn giao và tinh thần chủ động.",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const careerObjective = [
-    `Hướng tới vị trí ${role} tại doanh nghiệp đang mở rộng quy mô.`,
-    "Muốn đóng góp vào tăng trưởng doanh số / sản phẩm, đồng thời phát triển chuyên môn sâu.",
-    "Sẵn sàng nhận thử thách mới, làm việc hybrid hoặc toàn thời gian tùy nhu cầu đội ngũ.",
-  ].join(" ");
-
-  const educationDetails: CvEducationBlock[] = [
-    {
-      school: "Đại học Kinh tế TP. Hồ Chí Minh",
-      degree: `${candidate.education || "Đại học"} — chuyên ngành liên quan ${industry}`,
-      period: "2012 — 2016",
-      detail: "Tốt nghiệp khá; tham gia CLB học thuật và hoạt động tình nguyện sinh viên.",
-    },
-    {
-      school: "Chứng chỉ nghề nghiệp ngắn hạn",
-      degree: `Khóa nâng cao kỹ năng ${role}`,
-      period: "2018 — 2019",
-      detail: "Hoàn thành bài tập thực chiến, thuyết trình và case study theo nhóm.",
-    },
-  ];
-
-  const companyPool = [
-    "Công ty CP Giải pháp Số Việt",
-    "Tập đoàn Dịch vụ Khách hàng Á Châu",
-    "Công ty TNHH Thương mại & Công nghệ Nam Việt",
-    "Startup Growth Lab",
-  ];
-
-  const experiences: CvExperienceBlock[] = Array.from(
-    { length: Math.min(4, Math.max(2, Math.ceil(years / 2))) },
-    (_, idx) => {
-      const start = 2024 - (idx + 1) * 2;
-      const end = idx === 0 ? "Hiện tại" : String(start + 2);
-      return {
-        company: companyPool[idx % companyPool.length],
-        position: idx === 0 ? role : `${role} (Junior / Mid)`,
-        period: `${start} — ${end}`,
-        bullets: [
-          `Phụ trách các hạng mục chính liên quan ${role}, phối hợp 5–12 thành viên liên phòng ban.`,
-          `Theo dõi KPI tuần/tháng, phân tích nguyên nhân lệch mục tiêu và đề xuất hành động cải thiện.`,
-          `Xây dựng tài liệu quy trình, checklist bàn giao và hướng dẫn onboarding cho thành viên mới.`,
-          `Tham gia họp với stakeholders, trình bày tiến độ và rủi ro; hỗ trợ ra quyết định dựa trên dữ liệu.`,
-          `Đóng góp sáng kiến giúp rút ngắn thời gian xử lý công việc lặp lại khoảng 15–25%.`,
-        ],
-      };
+function mapEducationDetails(
+  details: CvEducationDetail[] | undefined,
+  fallbackEducation: string
+): CvEducationBlock[] {
+  if (!details?.length) {
+    if (fallbackEducation?.trim() && !isPlaceholder(fallbackEducation)) {
+      return [{ school: "", degree: fallbackEducation.trim(), period: "" }];
     }
+    return [];
+  }
+
+  return details
+    .map((d) => {
+      const school = d.school?.trim() || "";
+      const degreeParts = [d.degree, d.major, d.faculty].filter(
+        (p) => p && !isPlaceholder(p)
+      );
+      const degree = degreeParts.join(" — ") || fallbackEducation.trim();
+      const period = d.period && !isPlaceholder(d.period) ? d.period.trim() : "";
+      const detail =
+        d.classification && !isPlaceholder(d.classification)
+          ? d.classification.trim()
+          : undefined;
+      return { school, degree, period, detail };
+    })
+    .filter((e) => e.school || e.degree);
+}
+
+function mapExperiences(exps: CvExperienceDetail[] | undefined): CvExperienceBlock[] {
+  if (!exps?.length) return [];
+  return exps
+    .map((e) => ({
+      company: e.company?.trim() || "",
+      position: e.position?.trim() || "",
+      period: formatPeriod(e.startDate, e.endDate),
+      bullets: descriptionToBullets(e.description),
+    }))
+    .filter((e) => e.company || e.position || e.bullets.length > 0);
+}
+
+function buildDocumentBlocks(candidate: CandidateProfile) {
+  const cv = candidate.cvDetails;
+  const skills = [...candidate.skills, ...(cv?.itSkills ?? [])].filter(
+    (v, i, a) => a.indexOf(v) === i
   );
 
+  const activities = [cv?.activities?.trim(), cv?.extraNotes?.trim()]
+    .filter(Boolean)
+    .join("\n");
+
   return {
-    summary,
-    careerObjective,
-    educationDetails,
-    experiences,
-    interests: ["Đọc sách chuyên môn", "Chạy bộ", "Công nghệ mới", "Networking ngành"],
-    activities:
-      "Tình nguyện hỗ trợ ngày hội việc làm sinh viên; tham gia webinar chia sẻ kinh nghiệm nghề nghiệp định kỳ.",
+    summary: candidate.summary?.trim() || "",
+    careerObjective: cv?.careerObjective?.trim() || "",
+    educationDetails: mapEducationDetails(cv?.educationDetails, candidate.education),
+    experiences: mapExperiences(cv?.experiences),
+    interests: cv?.interests ?? [],
+    activities,
     skills,
   };
 }
@@ -157,29 +142,33 @@ function enrichBlocks(candidate: CandidateProfile): {
 export function toVstaffCvDocumentData(
   candidate: CandidateProfile
 ): VstaffCvDocumentData {
-  const enriched = enrichBlocks(candidate);
-  const locationParts = [candidate.wardName, candidate.location].filter(Boolean);
+  const blocks = buildDocumentBlocks(candidate);
+  const locationLine = formatCvLocationLine({
+    address: candidate.cvDetails?.address,
+    wardName: candidate.wardName,
+    location: candidate.location,
+  });
   const templateId = resolveCvTemplateId(candidate.industryId);
 
   return {
     fullName: candidate.fullName,
     title: candidate.title || candidate.desiredPosition,
     desiredPosition: candidate.desiredPosition || candidate.title,
-    locationLine: locationParts.join(", ") || candidate.location || "Việt Nam",
+    locationLine,
     phone: candidate.phone || "",
     email: candidate.email || "",
-    age: candidate.age,
-    summary: enriched.summary,
-    careerObjective: enriched.careerObjective,
+    dateOfBirth: formatCvBirthDate(candidate.cvDetails?.dateOfBirth),
+    summary: blocks.summary,
+    careerObjective: blocks.careerObjective,
     education: candidate.education || "Đại học",
-    educationDetails: enriched.educationDetails,
+    educationDetails: blocks.educationDetails,
     experienceLabel: formatExperienceYears(candidate.experienceYears),
-    experiences: enriched.experiences,
+    experiences: blocks.experiences,
     workType: candidate.workType || "Toàn thời gian",
-    skills: enriched.skills,
+    skills: blocks.skills,
     languages: candidate.languages?.length ? candidate.languages : ["Tiếng Việt"],
-    interests: enriched.interests,
-    activities: enriched.activities,
+    interests: blocks.interests,
+    activities: blocks.activities,
     industryId: candidate.industryId,
     industryName: industryNameOf(candidate.industryId),
     cvScore: candidate.cvScore,

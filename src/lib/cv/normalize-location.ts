@@ -5,6 +5,7 @@ import {
   getProvinceByCode,
   shortProvinceName,
 } from "@/data/vietnam-locations";
+import { formatCvLocationLine, stripOldDistrictTokens } from "@/lib/cv/format-cv-location";
 
 type ResolveData = {
   provinceAliases: Record<string, string>;
@@ -33,18 +34,6 @@ function norm(s: string) {
   return stripDiacritics(s.toLowerCase())
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
-    .trim();
-}
-
-/** Bỏ quận/huyện/thị xã cũ — hệ thống chỉ còn tỉnh + phường/xã. */
-function stripOldDistrictTokens(text: string) {
-  return text
-    .replace(
-      /(?:^|[,;\s])(?:quận|huyện|thị xã|thị trấn)\s+[^,;]+/giu,
-      " "
-    )
-    .replace(/\s{2,}/g, " ")
-    .replace(/^[\s,;]+|[\s,;]+$/g, "")
     .trim();
 }
 
@@ -95,43 +84,12 @@ function buildDisplayAddress(opts: {
   wardName?: string;
   provinceLabel: string;
 }) {
-  const parts: string[] = [];
   const cleaned = stripOldDistrictTokens(opts.rawAddress || "");
-  // bỏ phần tỉnh/thành phố trùng ở cuối nếu có
-  let street = cleaned
-    .replace(
-      new RegExp(
-        `(?:,\\s*)?(?:tỉnh|thành phố|tp\\.?|tphcm)?\\s*${opts.provinceLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`,
-        "iu"
-      ),
-      ""
-    )
-    .replace(/,\s*$/g, "")
-    .trim();
-
-  if (opts.wardName) {
-    const wardNorm = norm(opts.wardName);
-    const streetNorm = norm(street);
-    if (street && !streetNorm.includes(wardNorm.replace(/^(phuong|xa|thi tran|dac khu)\s+/, ""))) {
-      // giữ phần số nhà / đường nếu còn
-      const withoutWardish = street
-        .replace(
-          /(?:^|[,;\s])(?:phường|xã|thị trấn|đặc khu)\s+[^,;]+/giu,
-          " "
-        )
-        .replace(/\s{2,}/g, " ")
-        .replace(/^[\s,;]+|[\s,;]+$/g, "")
-        .trim();
-      if (withoutWardish && withoutWardish.length >= 3) parts.push(withoutWardish);
-    } else if (street && streetNorm.length > wardNorm.length + 2) {
-      parts.push(street);
-    }
-    parts.push(opts.wardName);
-  } else if (street) {
-    parts.push(street);
-  }
-  parts.push(opts.provinceLabel);
-  return [...new Set(parts.filter(Boolean))].join(", ");
+  return formatCvLocationLine({
+    address: cleaned || undefined,
+    wardName: opts.wardName,
+    location: opts.provinceLabel,
+  });
 }
 
 /**

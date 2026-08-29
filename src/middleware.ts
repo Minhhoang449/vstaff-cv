@@ -1,13 +1,8 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
-import { readAuthSecret } from "@/lib/auth-secret";
 import { NextResponse } from "next/server";
 
-const secret = readAuthSecret();
-const { auth } = NextAuth({
-  ...authConfig,
-  ...(secret ? { secret } : {}),
-});
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;

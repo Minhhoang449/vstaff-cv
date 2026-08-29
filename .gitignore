@@ -67,3 +67,6 @@ next-env.d.ts
 /scripts/all-province.json
 /scripts/sapnhap2025-vn.json
 /scripts/provinces.generated.json
+
+.vercel
+.env*

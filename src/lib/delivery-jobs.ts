@@ -18,6 +18,10 @@ import {
   buildDeliveryMatchContext,
   rankDeliveryCandidates,
 } from "@/lib/delivery-position-match";
+import {
+  hasDeliveryRunToday,
+  isInDeliveryWindow,
+} from "@/lib/delivery-slot-schedule";
 import { startOfTodayVietnamIso } from "@/lib/vietnam-time";
 
 export type {
@@ -104,8 +108,8 @@ export async function getEmployerDailyDeliveryUsage(employerId: string): Promise
   const deliveredIds = new Set<string>();
   let used = 0;
   for (const job of jobs) {
-    const runAt = job.lastRunAt || job.createdAt;
-    if (!runAt || runAt < dayStart) continue;
+    if (!job.lastRunAt) continue;
+    if (job.lastRunAt < dayStart) continue;
     for (const id of job.matchedCandidateIds) {
       deliveredIds.add(id);
     }
@@ -177,8 +181,13 @@ export async function createDeliveryJob(
     throw new Error("QUOTA");
   }
 
-  const matchedCandidateIds = await runMatchForJob(input, cap, daily.deliveredIds);
-  const now = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const runNow = isInDeliveryWindow(input.delivery, now);
+
+  const matchedCandidateIds = runNow
+    ? await runMatchForJob(input, cap, daily.deliveredIds)
+    : [];
   const id = `job_${randomBytes(8).toString("hex")}`;
 
   const job: CandidateDeliveryJob = {
@@ -196,9 +205,9 @@ export async function createDeliveryJob(
     status: "active",
     matchedCandidateIds,
     matchedCount: matchedCandidateIds.length,
-    createdAt: now,
-    updatedAt: now,
-    lastRunAt: now,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    lastRunAt: runNow ? nowIso : null,
   };
 
   if (!(await isDatabaseReady())) throw new Error("DATABASE_UNAVAILABLE");
@@ -329,6 +338,104 @@ export async function setDeliveryJobStatus(
     data: { status, updatedAt: new Date(next.updatedAt) },
   });
   return next;
+}
+
+async function runMatchForJobWithQuota(
+  job: CandidateDeliveryJob,
+  now = new Date()
+): Promise<{ matchedCandidateIds: string[]; skipped: string | null }> {
+  const [sub, daily] = await Promise.all([
+    getEmployerSubscriptionState(job.employerId),
+    getEmployerDailyDeliveryUsage(job.employerId),
+  ]);
+
+  if (daily.remaining <= 0) {
+    return { matchedCandidateIds: job.matchedCandidateIds, skipped: "DAILY_LIMIT" };
+  }
+  if (!sub) {
+    return { matchedCandidateIds: job.matchedCandidateIds, skipped: "QUOTA" };
+  }
+
+  let cap = daily.remaining;
+  if (sub.cvLimit != null) {
+    const planLeft = Math.max(0, sub.cvLimit - sub.cvUsed);
+    cap = Math.min(cap, planLeft);
+  }
+  if (cap <= 0) {
+    return { matchedCandidateIds: job.matchedCandidateIds, skipped: "QUOTA" };
+  }
+
+  const input: CreateDeliveryJobInput = {
+    employerId: job.employerId,
+    position: job.position,
+    industryId: job.industryId || undefined,
+    provinceCode: job.provinceCode,
+    wardCode: job.wardCode || undefined,
+    gender: job.gender || undefined,
+    language: job.language || undefined,
+    ageRange: job.ageRange || undefined,
+    delivery: job.delivery,
+    notes: job.notes || undefined,
+  };
+
+  const matchedCandidateIds = await runMatchForJob(input, cap, daily.deliveredIds);
+  return { matchedCandidateIds, skipped: null };
+}
+
+/** Cron: chạy lệnh active trong khung giờ VN, tối đa 1 lần/ngày/lệnh. */
+export async function runScheduledDeliveryJobs(now = new Date()) {
+  if (!(await isDatabaseReady())) {
+    return { ran: 0, skipped: 0, errors: ["DATABASE_UNAVAILABLE"] as string[] };
+  }
+  const prisma = getPrisma();
+  if (!prisma) {
+    return { ran: 0, skipped: 0, errors: ["DATABASE_UNAVAILABLE"] as string[] };
+  }
+
+  const rows = await prisma.deliveryJob.findMany({
+    where: { status: "active" },
+    orderBy: { createdAt: "asc" },
+  });
+
+  let ran = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const row of rows) {
+    const job = rowToJob(row);
+    if (!isInDeliveryWindow(job.delivery, now)) {
+      skipped++;
+      continue;
+    }
+    if (hasDeliveryRunToday(job.lastRunAt, now)) {
+      skipped++;
+      continue;
+    }
+
+    try {
+      const { matchedCandidateIds, skipped: skipReason } = await runMatchForJobWithQuota(job, now);
+      if (skipReason) {
+        skipped++;
+        continue;
+      }
+
+      const nowIso = now.toISOString();
+      await prisma.deliveryJob.update({
+        where: { id: job.id },
+        data: {
+          matchedCandidateIds,
+          matchedCount: matchedCandidateIds.length,
+          lastRunAt: new Date(nowIso),
+          updatedAt: new Date(nowIso),
+        },
+      });
+      ran++;
+    } catch (err) {
+      errors.push(`${job.id}: ${err instanceof Error ? err.message : "error"}`);
+    }
+  }
+
+  return { ran, skipped, errors };
 }
 
 export async function getMatchedCandidatesForJob(

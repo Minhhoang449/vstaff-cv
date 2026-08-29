@@ -1,9 +1,6 @@
-import Link from "next/link";
 import { auth, signOut } from "@/auth";
-import { AdminMonthlyRevenueBar } from "@/components/admin/admin-monthly-revenue-bar";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { VstaffLogo } from "@/components/home/vstaff-logo";
-import { Button } from "@/components/ui/button";
+import { AdminDashboardShell } from "@/components/admin/admin-dashboard-shell";
+import { getAdminRevenueSnapshot } from "@/lib/admin-business";
 
 export default async function AdminDashboardLayout({
   children,
@@ -11,46 +8,22 @@ export default async function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const { currentMonth } = await getAdminRevenueSnapshot();
+
+  async function signOutAction() {
+    "use server";
+    await signOut({ redirectTo: "/" });
+  }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--background)]">
-      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-white/95 backdrop-blur-sm">
-        <div className="flex h-14 items-center justify-between gap-3 px-4 sm:gap-4 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <VstaffLogo />
-            <span className="hidden h-4 w-px bg-zinc-200 sm:block" aria-hidden />
-            <span className="hidden text-sm text-zinc-500 sm:inline">Quản trị</span>
-          </div>
-
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
-            <AdminMonthlyRevenueBar />
-            <span className="hidden max-w-[12rem] truncate text-sm text-zinc-600 xl:inline">
-              {session?.user?.email}
-            </span>
-            <Link
-              href="/dashboard/employer"
-              className="hidden text-sm font-medium text-[var(--primary)] hover:underline lg:inline"
-            >
-              Xem NTD
-            </Link>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <Button type="submit" variant="outline" size="sm">
-                Đăng xuất
-              </Button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1">
-        <AdminSidebar />
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
-    </div>
+    <AdminDashboardShell
+      userEmail={session?.user?.email ?? null}
+      revenueAmount={currentMonth.amount}
+      revenueCount={currentMonth.count}
+      revenueLabel={currentMonth.label}
+      signOutAction={signOutAction}
+    >
+      {children}
+    </AdminDashboardShell>
   );
 }

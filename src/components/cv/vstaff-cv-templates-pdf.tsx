@@ -5,6 +5,7 @@ import { Document, Page, Text, View, Image } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
 import type { VstaffCvDocumentData } from "@/lib/cv/cv-document-data";
 import { getCvBrandLogoSrc } from "@/lib/cv/cv-brand-logo";
+import { CvPdfContactBlock } from "@/lib/cv/cv-pdf-contact";
 import { getCvTemplateTheme, type CvTemplateTheme } from "@/lib/cv/cv-template-themes";
 import { CV_PDF_FONT_FAMILY, registerCvPdfFonts } from "@/lib/cv/register-cv-fonts";
 
@@ -16,12 +17,6 @@ const MUTED = "#52525b";
 const LINE = "#e4e4e7";
 const PAGE_PAD_TOP = 42;
 const PAGE_PAD_BOTTOM = 52;
-
-function contactLine(data: VstaffCvDocumentData) {
-  return [data.locationLine, data.age ? `${data.age} tuổi` : "", data.phone, data.email]
-    .filter(Boolean)
-    .join("  ·  ");
-}
 
 /** Logo góc dưới phải — phải là con trực tiếp của Page + fixed. */
 function BrandMark() {
@@ -151,9 +146,16 @@ function SkillsChips({ skills, bg }: { skills: string[]; bg: string }) {
   );
 }
 
-function MetaLine({ data }: { data: VstaffCvDocumentData }) {
+function MetaLine({ data, centered }: { data: VstaffCvDocumentData; centered?: boolean }) {
   return (
-    <Text style={{ fontSize: 8.5, color: MUTED, marginBottom: 6 }}>
+    <Text
+      style={{
+        fontSize: 8.5,
+        color: MUTED,
+        marginBottom: 6,
+        textAlign: centered ? "center" : "left",
+      }}
+    >
       {data.industryName} · {data.workType} · {data.experienceLabel}
     </Text>
   );
@@ -166,7 +168,7 @@ function ClassicBody({ data, theme }: { data: VstaffCvDocumentData; theme: CvTem
       <View style={{ borderBottomWidth: 2, borderBottomColor: accent, paddingBottom: 10, marginBottom: 8 }}>
         <Text style={{ fontSize: 20, fontWeight: 700, fontFamily: FONT }}>{data.fullName}</Text>
         <Text style={{ fontSize: 12, color: accent, marginTop: 3 }}>{data.title}</Text>
-        <Text style={{ fontSize: 9, color: MUTED, marginTop: 6 }}>{contactLine(data)}</Text>
+        <CvPdfContactBlock data={data} style={{ marginTop: 6 }} />
         <MetaLine data={data} />
       </View>
       <SectionTitle color={accent}>Giới thiệu</SectionTitle>
@@ -181,9 +183,6 @@ function ClassicBody({ data, theme }: { data: VstaffCvDocumentData; theme: CvTem
       <SkillsChips skills={data.skills} bg={theme.chipBg} />
       <SectionTitle color={accent}>Ngoại ngữ</SectionTitle>
       <Text style={{ fontFamily: FONT }}>{data.languages.join(" · ")}</Text>
-      <SectionTitle color={accent}>Sở thích & hoạt động</SectionTitle>
-      <Text style={{ fontFamily: FONT, marginBottom: 3 }}>{data.interests.join(" · ")}</Text>
-      <Text style={{ fontFamily: FONT, color: MUTED, lineHeight: 1.4 }}>{data.activities}</Text>
     </>
   );
 }
@@ -244,9 +243,12 @@ function SidebarLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvT
               {data.fullName}
             </Text>
             <Text style={{ fontSize: 10, color: accentMuted, marginBottom: 10 }}>{data.title}</Text>
-            <Text style={{ fontSize: 8, color: muted, lineHeight: 1.4, marginBottom: 12 }}>
-              {contactLine(data)}
-            </Text>
+            <CvPdfContactBlock
+              data={data}
+              tone="sidebar"
+              fontSize={8}
+              style={{ marginBottom: 12 }}
+            />
             <Text style={{ fontSize: 10, fontWeight: 700, color: accentMuted, marginBottom: 6 }}>
               KỸ NĂNG
             </Text>
@@ -288,10 +290,6 @@ function SidebarLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvT
             HỌC VẤN
           </Text>
           <EducationList data={data} />
-          <Text style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 4, marginTop: 6 }}>
-            HOẠT ĐỘNG
-          </Text>
-          <Text style={{ color: MUTED, lineHeight: 1.4 }}>{data.activities}</Text>
         </View>
         <BrandMark />
       </Page>
@@ -326,9 +324,16 @@ function BannerLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTe
         >
           <Text style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>{data.fullName}</Text>
           <Text style={{ fontSize: 12, color: theme.accentMuted, marginTop: 4 }}>{data.title}</Text>
-          <Text style={{ fontSize: 9, color: theme.accentMuted, marginTop: 8 }}>
-            {contactLine(data)}
-          </Text>
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: "rgba(255,255,255,0.15)",
+              marginTop: 10,
+              paddingTop: 10,
+            }}
+          >
+            <CvPdfContactBlock data={data} tone="onAccent" fontSize={9} />
+          </View>
         </View>
         <MetaLine data={data} />
         <SectionTitle color={accent}>Tóm tắt chuyên môn</SectionTitle>
@@ -343,8 +348,6 @@ function BannerLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTe
         <SkillsChips skills={data.skills} bg={theme.chipBg} />
         <SectionTitle color={accent}>Ngoại ngữ</SectionTitle>
         <Text>{data.languages.join(" · ")}</Text>
-        <SectionTitle color={accent}>Hoạt động</SectionTitle>
-        <Text style={{ color: MUTED, lineHeight: 1.4 }}>{data.activities}</Text>
         <BrandMark />
       </Page>
     </Document>
@@ -376,7 +379,7 @@ function RailLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTemp
         <View style={{ flex: 1, paddingHorizontal: 28 }}>
           <Text style={{ fontSize: 22, fontWeight: 700 }}>{data.fullName}</Text>
           <Text style={{ fontSize: 12, color: accent, marginTop: 3 }}>{data.title}</Text>
-          <Text style={{ fontSize: 9, color: MUTED, marginTop: 6 }}>{contactLine(data)}</Text>
+          <CvPdfContactBlock data={data} style={{ marginTop: 6 }} />
           <SectionTitle color={accent}>Giới thiệu</SectionTitle>
           <Text style={{ lineHeight: 1.45 }}>{data.summary}</Text>
           <SectionTitle color={accent}>Hướng đi</SectionTitle>
@@ -388,9 +391,7 @@ function RailLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTemp
           <SectionTitle color={accent}>Công cụ & kỹ năng</SectionTitle>
           <SkillsChips skills={data.skills} bg={theme.chipBg} />
           <SectionTitle color={accent}>Ngoại ngữ & sở thích</SectionTitle>
-          <Text style={{ marginBottom: 4 }}>{data.languages.join(" · ")}</Text>
-          <Text style={{ color: MUTED }}>{data.interests.join(" · ")}</Text>
-          <Text style={{ color: MUTED, marginTop: 4, lineHeight: 1.4 }}>{data.activities}</Text>
+          <Text>{data.languages.join(" · ")}</Text>
         </View>
         <BrandMark />
       </Page>
@@ -427,25 +428,17 @@ function TopbarLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTe
             <Text style={{ fontSize: 20, fontWeight: 700 }}>{data.fullName}</Text>
             <Text style={{ fontSize: 11, color: accent, marginTop: 3 }}>{data.title}</Text>
           </View>
-          <View style={{ width: 150, alignItems: "flex-end" }}>
-            <Text style={{ fontSize: 8, color: MUTED, textAlign: "right", lineHeight: 1.4 }}>
-              {contactLine(data)}
-            </Text>
-          </View>
+          <CvPdfContactBlock data={data} align="end" maxWidth={150} fontSize={8} />
         </View>
         <MetaLine data={data} />
         <SectionTitle color={accent}>Giới thiệu</SectionTitle>
         <Text style={{ lineHeight: 1.45 }}>{data.summary}</Text>
-        <SectionTitle color={accent}>Mục tiêu</SectionTitle>
-        <Text style={{ lineHeight: 1.45 }}>{data.careerObjective}</Text>
         <SectionTitle color={accent}>Kinh nghiệm</SectionTitle>
         <ExperienceList data={data} accent={accent} />
         <SectionTitle color={accent}>Học vấn</SectionTitle>
         <EducationList data={data} />
         <SectionTitle color={accent}>Kỹ năng</SectionTitle>
         <SkillsChips skills={data.skills} bg={theme.chipBg} />
-        <SectionTitle color={accent}>Ngoại ngữ</SectionTitle>
-        <Text>{data.languages.join(" · ")}</Text>
         <BrandMark />
       </Page>
     </Document>
@@ -469,9 +462,7 @@ function SplitLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTem
       >
         <Text style={{ fontSize: 22, fontWeight: 700 }}>{data.fullName}</Text>
         <Text style={{ fontSize: 12, color: accent, marginTop: 3 }}>{data.title}</Text>
-        <Text style={{ fontSize: 9, color: MUTED, marginTop: 6, marginBottom: 10 }}>
-          {contactLine(data)}
-        </Text>
+        <CvPdfContactBlock data={data} style={{ marginTop: 6, marginBottom: 10 }} />
         <View style={{ flexDirection: "row", gap: 16 }}>
           <View style={{ width: "62%" }}>
             <SectionTitle color={accent}>Giới thiệu</SectionTitle>
@@ -495,11 +486,7 @@ function SplitLayout({ data, theme }: { data: VstaffCvDocumentData; theme: CvTem
             <Text style={{ fontSize: 10, fontWeight: 700, color: accent, marginTop: 10, marginBottom: 6 }}>
               NGOẠI NGỮ
             </Text>
-            <Text style={{ fontSize: 9, lineHeight: 1.4 }}>{data.languages.join("\n")}</Text>
-            <Text style={{ fontSize: 10, fontWeight: 700, color: accent, marginTop: 10, marginBottom: 6 }}>
-              MỤC TIÊU
-            </Text>
-            <Text style={{ fontSize: 9, color: MUTED, lineHeight: 1.4 }}>{data.careerObjective}</Text>
+            <Text style={{ fontSize: 9, lineHeight: 1.4 }}>{data.languages.join(" · ")}</Text>
           </View>
         </View>
         <BrandMark />
@@ -528,23 +515,19 @@ function ExecutiveLayout({ data, theme }: { data: VstaffCvDocumentData; theme: C
           <Text style={{ fontSize: 11, color: accent, marginTop: 4, textTransform: "uppercase" }}>
             {data.title}
           </Text>
-          <Text style={{ fontSize: 8.5, color: MUTED, marginTop: 8, textAlign: "center" }}>
-            {contactLine(data)}
-          </Text>
+          <CvPdfContactBlock data={data} align="center" style={{ marginTop: 8 }} />
         </View>
-        <MetaLine data={data} />
+        <View style={{ alignItems: "center", marginBottom: 6 }}>
+          <MetaLine data={data} centered />
+        </View>
         <SectionTitle color={accent}>Tóm tắt</SectionTitle>
         <Text style={{ lineHeight: 1.45 }}>{data.summary}</Text>
-        <SectionTitle color={accent}>Định hướng</SectionTitle>
-        <Text style={{ lineHeight: 1.45 }}>{data.careerObjective}</Text>
         <SectionTitle color={accent}>Kinh nghiệm chuyên môn</SectionTitle>
         <ExperienceList data={data} accent={accent} />
         <SectionTitle color={accent}>Học vấn</SectionTitle>
         <EducationList data={data} />
         <SectionTitle color={accent}>Năng lực</SectionTitle>
         <SkillsChips skills={data.skills} bg={theme.chipBg} />
-        <SectionTitle color={accent}>Ngoại ngữ</SectionTitle>
-        <Text>{data.languages.join(" · ")}</Text>
         <BrandMark />
       </Page>
     </Document>
@@ -583,25 +566,18 @@ function MagazineLayout({ data, theme }: { data: VstaffCvDocumentData; theme: Cv
           />
           <View style={{ width: 140 }}>
             <Text style={{ fontSize: 11, fontWeight: 700, color: accent }}>{data.title}</Text>
-            <Text style={{ fontSize: 8, color: MUTED, marginTop: 4, lineHeight: 1.35 }}>
-              {contactLine(data)}
-            </Text>
+            <CvPdfContactBlock data={data} fontSize={8} style={{ marginTop: 4 }} />
           </View>
         </View>
         <View style={{ height: 1, backgroundColor: accent, marginBottom: 12 }} />
         <SectionTitle color={accent}>Giới thiệu</SectionTitle>
         <Text style={{ lineHeight: 1.45 }}>{data.summary}</Text>
-        <SectionTitle color={accent}>Hướng đi</SectionTitle>
-        <Text style={{ lineHeight: 1.45 }}>{data.careerObjective}</Text>
         <SectionTitle color={accent}>Kinh nghiệm & dự án</SectionTitle>
         <ExperienceList data={data} accent={accent} />
         <SectionTitle color={accent}>Đào tạo</SectionTitle>
         <EducationList data={data} />
         <SectionTitle color={accent}>Kỹ năng</SectionTitle>
         <SkillsChips skills={data.skills} bg={theme.chipBg} />
-        <SectionTitle color={accent}>Ngoại ngữ & sở thích</SectionTitle>
-        <Text style={{ marginBottom: 3 }}>{data.languages.join(" · ")}</Text>
-        <Text style={{ color: MUTED }}>{data.interests.join(" · ")}</Text>
         <BrandMark />
       </Page>
     </Document>

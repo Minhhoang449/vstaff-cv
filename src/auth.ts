@@ -1,14 +1,10 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "@/auth.config";
-import { readAuthSecret } from "@/lib/auth-secret";
 import { verifyUserCredentials } from "@/lib/users-auth";
-
-const secret = readAuthSecret();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  ...(secret ? { secret } : {}),
   providers: [
     Credentials({
       name: "Credentials",

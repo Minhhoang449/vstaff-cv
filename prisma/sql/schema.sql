@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS "CandidateProfile" (
     "email" TEXT NOT NULL DEFAULT '',
     "isPublic" BOOLEAN NOT NULL DEFAULT false,
     "originalFileUrl" TEXT,
+    "cvDetails" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "CandidateProfile_pkey" PRIMARY KEY ("id")
@@ -285,3 +286,6 @@ CREATE TABLE IF NOT EXISTS "EmailCampaign" (
 );
 
 CREATE INDEX IF NOT EXISTS "EmailCampaign_employerId_sentAt_idx" ON "EmailCampaign"("employerId", "sentAt" DESC);
+
+-- Cột mới trên DB đã tồn tại (Neon / PGlite)
+ALTER TABLE "CandidateProfile" ADD COLUMN IF NOT EXISTS "cvDetails" JSONB;

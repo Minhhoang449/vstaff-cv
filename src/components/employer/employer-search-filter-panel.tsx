@@ -183,7 +183,10 @@ export function EmployerSearchFilterPanel({
   ];
 
   return (
-    <form onSubmit={applySearch} className="flex h-full flex-col bg-white">
+    <form
+      onSubmit={applySearch}
+      className="flex flex-col bg-white lg:h-full lg:min-h-0"
+    >
       <div className="flex items-center justify-between gap-2 border-b border-zinc-200/90 px-4 py-3.5">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--primary)]/10 text-[var(--primary)]">
@@ -207,7 +210,7 @@ export function EmployerSearchFilterPanel({
         ) : null}
       </div>
 
-      <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4">
+      <div className="space-y-5 px-4 py-4 pb-2 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pb-4">
         <section className="space-y-3">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-zinc-400">
             Tìm kiếm cơ bản
@@ -262,7 +265,7 @@ export function EmployerSearchFilterPanel({
 
         <div className="h-px bg-zinc-100" />
 
-        <section>
+        <section className="space-y-3 pb-1">
           <div className="flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-zinc-400">
@@ -270,7 +273,7 @@ export function EmployerSearchFilterPanel({
             </p>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {ADV_FILTERS.map((item) => {
               const selectedValue = advValues[item.key];
               const selectedLabel = advOptions(item.key).find((o) => o.value === selectedValue)?.label;
@@ -367,17 +370,17 @@ export function EmployerSearchFilterPanel({
               </ul>
             </div>
           ) : null}
-        </section>
 
-        <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-zinc-100 bg-zinc-50/60 px-3 py-2.5 text-sm text-zinc-700">
-          <input
-            type="checkbox"
-            checked={unviewedOnly}
-            onChange={(e) => setUnviewedOnly(e.target.checked)}
-            className="size-4 accent-[var(--primary)]"
-          />
-          Chỉ hiện hồ sơ chưa xem
-        </label>
+          <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-zinc-200 bg-zinc-50/80 px-3 py-3 text-sm text-zinc-700">
+            <input
+              type="checkbox"
+              checked={unviewedOnly}
+              onChange={(e) => setUnviewedOnly(e.target.checked)}
+              className="size-4 shrink-0 accent-[var(--primary)]"
+            />
+            Chỉ hiện hồ sơ chưa xem
+          </label>
+        </section>
       </div>
 
       <div className="shrink-0 border-t border-zinc-200/90 bg-white/95 p-3 backdrop-blur-sm">

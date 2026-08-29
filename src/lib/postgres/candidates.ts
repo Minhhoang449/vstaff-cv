@@ -2,6 +2,8 @@ import "server-only";
 
 import { randomBytes } from "node:crypto";
 import { evaluateCvCompleteness } from "@/lib/cv/cv-completeness";
+import { parseCvDetails, cvDetailsToDbJson } from "@/lib/cv/cv-details";
+import type { CandidateProfile as DbCandidate, Prisma } from "@/generated/prisma";
 import { getPrisma, isDatabaseReady } from "@/lib/db";
 import {
   MAX_LIST_PAGE,
@@ -12,13 +14,13 @@ import {
   type CandidateProfile,
   type JobSeekingStatus,
 } from "@/lib/candidates-shared";
-import type { CandidateProfile as DbCandidate, Prisma } from "@/generated/prisma";
 
 function newId(prefix: string) {
   return `${prefix}_${randomBytes(8).toString("hex")}`;
 }
 
 function toProfile(row: DbCandidate, isViewed: boolean): CandidateProfile {
+  const cvDetails = parseCvDetails(row.cvDetails);
   const completeness = evaluateCvCompleteness({
     fullName: row.fullName,
     title: row.title,
@@ -38,6 +40,7 @@ function toProfile(row: DbCandidate, isViewed: boolean): CandidateProfile {
     workType: row.workType,
     phone: row.phone,
     email: row.email,
+    ...cvDetails,
   });
 
   return {
@@ -70,6 +73,7 @@ function toProfile(row: DbCandidate, isViewed: boolean): CandidateProfile {
     cvScore: completeness.cvScore,
     cvGrade: completeness.cvGrade,
     cvScoreLabel: completeness.cvScoreLabel,
+    cvDetails,
   };
 }
 
@@ -296,6 +300,7 @@ export async function createCandidatesPg(
   if (!prisma) throw new Error("DATABASE_UNAVAILABLE");
   let created = 0;
   for (const p of profiles) {
+    const cvDetailsJson = cvDetailsToDbJson(p.cvDetails) as Prisma.InputJsonValue | undefined;
     await prisma.candidateProfile.upsert({
       where: { id: p.id },
       create: {
@@ -324,6 +329,7 @@ export async function createCandidatesPg(
         email: p.email,
         isPublic: p.isPublic !== false,
         originalFileUrl: options?.originalFileUrls?.[p.id] ?? null,
+        cvDetails: cvDetailsJson ?? undefined,
         updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date(),
       },
       update: {
@@ -351,6 +357,7 @@ export async function createCandidatesPg(
         email: p.email,
         isPublic: p.isPublic !== false,
         originalFileUrl: options?.originalFileUrls?.[p.id] ?? undefined,
+        cvDetails: cvDetailsJson ?? undefined,
         updatedAt: new Date(),
       },
     });

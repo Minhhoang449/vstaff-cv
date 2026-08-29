@@ -95,38 +95,37 @@ export function EmployerCandidateDetail({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_22rem]">
-        {/* Main column */}
-        <div className="min-w-0 space-y-4">
+        <div className="order-2 min-w-0 space-y-4 lg:order-1">
           {/* Profile hero */}
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_4px_24px_-8px_rgba(15,40,60,0.12)] sm:p-6">
-            <div className="flex gap-4 sm:gap-5">
+          <section className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_4px_24px_-8px_rgba(15,40,60,0.12)] sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:gap-5">
               <EmployerCandidateAvatar
                 size="lg"
                 name={candidate.fullName}
-                className="rounded-2xl p-2"
+                className="mx-auto shrink-0 rounded-2xl p-2 sm:mx-0"
               />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="font-display text-2xl font-medium tracking-tight text-zinc-900 sm:text-[1.65rem]">
-                        {candidate.fullName}
-                      </h1>
-                      <span className="text-sm text-zinc-500">({candidate.age} tuổi)</span>
-                      {isActive ? (
-                        <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">
-                          {jobSeekingLabel(candidate.jobSeekingStatus)}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-600">
-                          {jobSeekingLabel(candidate.jobSeekingStatus)}
-                        </span>
-                      )}
-                      <CvScorePill score={candidate.cvScore} label={candidate.cvScoreLabel} />
-                    </div>
-                    <p className="mt-1.5 text-[15px] font-medium text-zinc-700">
-                      {candidate.title}
-                      <span className="font-normal text-zinc-400"> · </span>
-                      <span className="font-normal text-zinc-600">{industryName}</span>
-                    </p>
+                  <h1 className="font-display text-xl font-medium tracking-tight text-zinc-900 sm:text-[1.65rem]">
+                    {candidate.fullName}
+                  </h1>
+                  <span className="text-sm text-zinc-500">({candidate.age} tuổi)</span>
+                  {isActive ? (
+                    <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">
+                      {jobSeekingLabel(candidate.jobSeekingStatus)}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-600">
+                      {jobSeekingLabel(candidate.jobSeekingStatus)}
+                    </span>
+                  )}
+                  <CvScorePill score={candidate.cvScore} label={candidate.cvScoreLabel} />
+                </div>
+                <p className="mt-1.5 text-sm font-medium text-zinc-700 sm:text-[15px]">
+                  {candidate.title}
+                  <span className="font-normal text-zinc-400"> · </span>
+                  <span className="font-normal text-zinc-600">{industryName}</span>
+                </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <MetaPill icon={MapPin}>
                     {[candidate.wardName, candidate.location].filter(Boolean).join(", ")}
@@ -175,7 +174,7 @@ export function EmployerCandidateDetail({
           {/* CV preview */}
           <section className="space-y-3">
             <div className="flex flex-wrap items-end justify-between gap-2 px-0.5">
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-base font-semibold text-zinc-900">CV Vstaff</h2>
                 <p className="mt-0.5 text-sm text-zinc-500">
                   {cvTemplateLabel(cvData.templateId)} · phù hợp ngành {cvData.industryName}
@@ -183,13 +182,15 @@ export function EmployerCandidateDetail({
               </div>
               <EmployerCvDownloadButton slug={candidate.slug} fullName={candidate.fullName} />
             </div>
-            <VstaffCvPreview data={cvData} revealContact={unlocked} />
+            <div className="overflow-x-auto">
+              <VstaffCvPreview data={cvData} revealContact={unlocked} />
+            </div>
           </section>
         </div>
 
-        {/* Sticky action rail */}
-        <aside className="lg:sticky lg:top-[calc(3.5rem+1rem)]">
-          <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_4px_24px_-8px_rgba(15,40,60,0.12)]">
+        {/* Sticky action rail — hiện trước trên mobile */}
+        <aside className="order-1 lg:order-2 lg:sticky lg:top-[calc(3.5rem+1rem)]">
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_4px_24px_-8px_rgba(15,40,60,0.12)] sm:p-5">
             <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-zinc-400 uppercase">
               Thao tác nhanh
             </p>

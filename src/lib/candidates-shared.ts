@@ -1,6 +1,7 @@
 /** Client-safe candidate types/constants — do NOT import db/prisma here. */
 
 import { evaluateCvCompleteness } from "@/lib/cv/cv-completeness";
+import type { CandidateCvDetails } from "@/lib/cv/cv-details";
 
 export type UserRole = "EMPLOYER" | "CANDIDATE" | "ADMIN";
 
@@ -39,6 +40,8 @@ export type CandidateProfile = {
   cvScore: number;
   cvGrade: "A" | "B" | "C" | "D";
   cvScoreLabel: string;
+  /** Chi tiết CV trích xuất (kinh nghiệm, học vấn, sở thích…) */
+  cvDetails?: CandidateCvDetails;
 };
 
 export const PAGE_SIZE = 12;

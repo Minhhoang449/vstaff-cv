@@ -66,6 +66,30 @@ export async function ensureDemoUsers(prisma: PrismaClient): Promise<void> {
         },
         update: { company: demo.company },
       });
+
+      const expiresAt = new Date();
+      expiresAt.setUTCDate(expiresAt.getUTCDate() + 30);
+      await prisma.employerSubscription.upsert({
+        where: { employerId: row.id },
+        create: {
+          employerId: row.id,
+          planId: "standard",
+          planName: "Phổ biến",
+          cvUsed: 0,
+          cvLimit: null,
+          cvUsedToday: 0,
+          activatedAt: new Date(),
+          expiresAt,
+          activationVerified: true,
+        },
+        update: {
+          planId: "standard",
+          planName: "Phổ biến",
+          cvLimit: null,
+          expiresAt,
+          activationVerified: true,
+        },
+      });
     }
   }
 

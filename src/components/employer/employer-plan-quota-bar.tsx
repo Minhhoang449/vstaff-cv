@@ -26,7 +26,7 @@ export function EmployerPlanQuotaBar({ subscription }: Props) {
   return (
     <Link
       href="/dashboard/employer/bang-gia"
-      className="group flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/90 px-2.5 py-1.5 transition hover:border-[var(--primary)]/35 hover:bg-[var(--primary)]/[0.04] sm:gap-3 sm:px-3"
+      className="group flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50/90 px-2 py-1.5 transition hover:border-[var(--primary)]/35 hover:bg-[var(--primary)]/[0.04] sm:gap-3 sm:px-3"
       title="Xem bảng giá / nâng gói"
     >
       <span className="hidden truncate text-[11px] font-semibold text-zinc-500 lg:inline">
@@ -69,14 +69,14 @@ export function EmployerPlanQuotaBar({ subscription }: Props) {
 
       <span className="hidden h-3.5 w-px bg-zinc-200 sm:block" aria-hidden />
 
-      <span className="flex items-center gap-1.5">
+      <span className="flex min-w-0 items-center gap-1.5">
         <CalendarClock
-          className={cn("h-3.5 w-3.5 shrink-0", timeUrgent ? "text-amber-600" : "text-zinc-500")}
+          className={cn("hidden h-3.5 w-3.5 shrink-0 sm:block", timeUrgent ? "text-amber-600" : "text-zinc-500")}
           aria-hidden
         />
         <span
           className={cn(
-            "whitespace-nowrap text-xs font-semibold",
+            "hidden whitespace-nowrap text-xs font-semibold sm:inline",
             timeUrgent ? "text-amber-800" : "text-zinc-700"
           )}
         >

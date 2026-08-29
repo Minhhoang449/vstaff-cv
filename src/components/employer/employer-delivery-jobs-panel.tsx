@@ -11,6 +11,7 @@ import {
   type CandidateDeliveryJob,
   type DeliveryJobStatus,
 } from "@/lib/delivery-job-types";
+import { formatDeliveryDateTimeVi } from "@/lib/delivery-slot-schedule";
 import { cn } from "@/lib/utils";
 
 const STATUS: Record<DeliveryJobStatus, { label: string; className: string }> = {
@@ -38,13 +39,7 @@ function industryLabel(id: string) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatDeliveryDateTimeVi(iso);
 }
 
 type Props = {
@@ -153,6 +148,11 @@ export function EmployerDeliveryJobsPanel({ jobs: initial, activeJobId }: Props)
                     hồ sơ
                   </span>
                   <span>Tạo {formatDate(job.createdAt)}</span>
+                  {job.lastRunAt ? (
+                    <span>Gửi gần nhất {formatDate(job.lastRunAt)}</span>
+                  ) : (
+                    <span className="text-amber-700">Chờ khung {deliverySlotLabel(job.delivery)}</span>
+                  )}
                 </p>
                 {job.notes ? (
                   <p className="mt-1.5 line-clamp-2 text-xs text-zinc-500">{job.notes}</p>

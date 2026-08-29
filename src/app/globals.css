@@ -103,4 +103,67 @@ body {
   .home-animate-line {
     animation: none;
   }
+
+  .employer-loader-bounce,
+  .employer-loader-orbit-ring,
+  .employer-loader-shimmer,
+  .employer-loader-msg {
+    animation: none !important;
+  }
+}
+
+/* —— Employer dashboard loading —— */
+@keyframes employer-bounce-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes employer-orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes employer-shimmer-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes employer-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.employer-loader-bounce {
+  animation: employer-bounce-soft 1.4s ease-in-out infinite;
+}
+
+.employer-loader-orbit-ring {
+  animation: employer-orbit-spin 6s linear infinite;
+}
+
+.employer-loader-shimmer {
+  animation: employer-shimmer-slide 1.35s ease-in-out infinite;
+}
+
+.employer-loader-msg {
+  animation: employer-msg-in 0.45s ease both;
 }

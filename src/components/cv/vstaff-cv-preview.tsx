@@ -1,8 +1,10 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
+import { Cake, Mail, MapPin, Phone } from "lucide-react";
 import type { VstaffCvDocumentData } from "@/lib/cv/cv-document-data";
 import { cvTemplateLabel } from "@/lib/cv/cv-document-data";
 import { getCvTemplateTheme, type CvTemplateTheme } from "@/lib/cv/cv-template-themes";
+import { cn } from "@/lib/utils";
 
 type PreviewProps = {
   data: VstaffCvDocumentData;
@@ -13,31 +15,85 @@ function ContactLine({
   data,
   revealContact,
   className,
+  tone = "default",
+  align = "start",
 }: {
   data: VstaffCvDocumentData;
   revealContact?: boolean;
   className?: string;
+  /** Banner/header nền màu — chữ trắng */
+  tone?: "default" | "onAccent";
+  /** Căn block liên hệ — executive dùng center */
+  align?: "start" | "center" | "end";
 }) {
-  const parts = [
-    data.locationLine,
-    data.age ? `${data.age} tuổi` : "",
-    revealContact ? data.phone : "",
-    revealContact ? data.email : "",
-  ].filter(Boolean);
+  const onAccent = tone === "onAccent";
+  const iconClass = onAccent
+    ? "h-3.5 w-3.5 shrink-0 opacity-90"
+    : "h-3.5 w-3.5 shrink-0 text-zinc-400";
+  const rowClass = onAccent
+    ? "text-sm text-white/95"
+    : "text-sm text-zinc-600";
+  const metaClass = onAccent
+    ? "text-[11px] text-white/75"
+    : "text-[11px] text-zinc-500";
+  const centered = align === "center";
+  const endAligned = align === "end";
+  const hiddenNoteAlign =
+    centered ? "text-center" : endAligned ? "text-right" : "text-left";
 
-  return (
-    <div className={className}>
-      <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs opacity-90">
-        {parts.map((c) => (
-          <span key={c}>{c}</span>
-        ))}
-      </p>
+  const rows = (
+    <>
+      {data.locationLine ? (
+        <p className={cn("flex w-full items-start gap-2", rowClass)}>
+          <MapPin className={cn(iconClass, "mt-0.5 shrink-0")} aria-hidden />
+          <span className="min-w-0 break-words leading-snug">{data.locationLine}</span>
+        </p>
+      ) : null}
+
+      <div
+        className={cn(
+          "mt-2 flex w-full flex-wrap items-center gap-x-4 gap-y-2",
+          onAccent ? "text-sm text-white/90" : "text-sm text-zinc-600"
+        )}
+      >
+        {data.dateOfBirth ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Cake className={iconClass} aria-hidden />
+            <span>{data.dateOfBirth}</span>
+          </span>
+        ) : null}
+        {revealContact && data.phone ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Phone className={iconClass} aria-hidden />
+            <span>{data.phone}</span>
+          </span>
+        ) : null}
+        {revealContact && data.email ? (
+          <span className="inline-flex max-w-full items-start gap-1.5">
+            <Mail className={cn(iconClass, "mt-0.5")} aria-hidden />
+            <span className="min-w-0 break-all">{data.email}</span>
+          </span>
+        ) : null}
+      </div>
+
       {!revealContact ? (
-        <p className="mt-1 text-[11px] opacity-80">
+        <p className={cn("mt-2 max-w-full", metaClass, hiddenNoteAlign)}>
           SĐT & email đang ẩn — bấm “Mở hồ sơ” để xem (−1 CV).
         </p>
       ) : null}
-    </div>
+    </>
+  );
+
+  if (centered) {
+    return (
+      <div className={cn("flex w-full min-w-0 justify-center", className)}>
+        <div className="flex min-w-0 max-w-full flex-col text-left">{rows}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex w-full min-w-0 flex-col text-left", className)}>{rows}</div>
   );
 }
 
@@ -170,7 +226,7 @@ function SidebarPreview({
 
   return (
     <div className="flex min-h-[32rem] overflow-hidden">
-      <aside className="w-[32%] shrink-0 px-4 py-8 text-zinc-200" style={sideStyle}>
+      <aside className="w-[32%] min-w-0 shrink-0 px-4 py-8 text-zinc-200" style={sideStyle}>
         <h2 className="text-lg font-semibold text-white">{data.fullName}</h2>
         <p className="mt-1 text-sm" style={{ color: theme.accentMuted }}>
           {data.title}
@@ -237,12 +293,17 @@ function BannerPreview({
   const a = theme.accent;
   return (
     <div>
-      <div className="px-8 py-6 text-white sm:px-10" style={{ backgroundColor: a }}>
-        <h2 className="text-2xl font-semibold">{data.fullName}</h2>
-        <p className="mt-1 text-sm" style={{ color: theme.accentMuted }}>
+      <div className="px-8 py-7 text-white sm:px-10" style={{ backgroundColor: a }}>
+        <h2 className="text-xl font-bold tracking-wide uppercase sm:text-2xl">{data.fullName}</h2>
+        <p className="mt-1.5 text-sm font-medium" style={{ color: theme.accentMuted }}>
           {data.title}
         </p>
-        <ContactLine data={data} revealContact={revealContact} className="mt-3" />
+        <ContactLine
+          data={data}
+          revealContact={revealContact}
+          tone="onAccent"
+          className="mt-4 border-t border-white/15 pt-4"
+        />
       </div>
       <div className="px-8 py-6 sm:px-10">
         <Meta data={data} />
@@ -317,8 +378,8 @@ function TopbarPreview({
     <div>
       <div className="h-2" style={{ backgroundColor: a }} />
       <div className="px-8 py-8 sm:px-10">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <h2 className="text-2xl font-semibold text-zinc-900">{data.fullName}</h2>
             <p className="mt-1 text-base font-medium" style={{ color: a }}>
               {data.title}
@@ -327,7 +388,8 @@ function TopbarPreview({
           <ContactLine
             data={data}
             revealContact={revealContact}
-            className="max-w-xs text-right text-zinc-500"
+            align="end"
+            className="w-full sm:ml-auto sm:max-w-[14rem] md:max-w-xs"
           />
         </div>
         <div className="mt-2">
@@ -421,10 +483,11 @@ function ExecutivePreview({
         <ContactLine
           data={data}
           revealContact={revealContact}
-          className="mt-3 flex justify-center text-zinc-500"
+          align="center"
+          className="mt-3"
         />
       </header>
-      <div className="mt-3">
+      <div className="mt-3 text-center">
         <Meta data={data} />
       </div>
       <SectionH color={a}>Tóm tắt</SectionH>
@@ -463,7 +526,7 @@ function MagazinePreview({
           </h2>
         </div>
         <div className="h-12 w-1 shrink-0" style={{ backgroundColor: a }} />
-        <div className="max-w-[11rem]">
+        <div className="min-w-0 w-full max-w-[11rem] sm:w-auto">
           <p className="text-sm font-semibold" style={{ color: a }}>
             {data.title}
           </p>

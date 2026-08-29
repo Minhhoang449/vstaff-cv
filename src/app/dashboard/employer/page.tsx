@@ -95,7 +95,7 @@ export default async function EmployerDashboardPage() {
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
           Dashboard
         </p>
-        <h1 className="mt-2 font-display text-3xl font-medium tracking-tight text-zinc-900">
+        <h1 className="mt-2 font-display text-2xl font-medium tracking-tight text-zinc-900 sm:text-3xl">
           Xin chào, nhà tuyển dụng
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 sm:text-base">

@@ -75,9 +75,9 @@ export default async function EmployerSearchCandidatesPage({
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-zinc-100">
-      <div className="flex flex-col gap-3 p-3 lg:flex-row lg:items-start lg:gap-4 lg:p-4">
+      <div className="flex flex-col gap-3 p-2 sm:gap-4 sm:p-3 lg:flex-row lg:items-start lg:gap-4 lg:p-4">
         <aside className="w-full shrink-0 lg:sticky lg:top-[calc(3.5rem+1rem)] lg:h-[calc(100vh-3.5rem-2rem)] lg:w-[17.5rem] xl:w-[18.5rem]">
-          <div className="flex h-full max-h-[min(70vh,36rem)] flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_4px_24px_-8px_rgba(15,40,60,0.12)] lg:max-h-none">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_4px_24px_-8px_rgba(15,40,60,0.12)] lg:flex lg:h-full lg:max-h-none lg:flex-col">
             <EmployerSearchFilterPanel values={filters} />
           </div>
         </aside>

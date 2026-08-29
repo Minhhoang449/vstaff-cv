@@ -3,6 +3,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import type { CandidateUploadItem } from "@/data/candidate-upload-schema";
 import { evaluateCvCompleteness } from "@/lib/cv/cv-completeness";
+import { cvDetailsFromUpload } from "@/lib/cv/cv-details";
 import {
   type CandidateGender,
   type CandidateProfile,
@@ -34,6 +35,7 @@ function toStatus(s?: string): JobSeekingStatus {
 }
 
 function uploadToProfile(item: CandidateUploadItem): CandidateProfile {
+  const cvDetails = cvDetailsFromUpload(item);
   const completeness = evaluateCvCompleteness(item);
   const now = new Date().toISOString();
   return {
@@ -50,7 +52,7 @@ function uploadToProfile(item: CandidateUploadItem): CandidateProfile {
     gender: toGender(item.gender),
     languages: item.languages?.length ? item.languages.map(String) : ["Tiếng Việt"],
     education: item.education?.trim() || "Đại học",
-    experienceYears: Number(item.experienceYears ?? 0) || 0,
+    experienceYears: Math.max(0, Math.round(Number(item.experienceYears ?? 0) || 0)),
     skills: Array.isArray(item.skills) ? item.skills.map(String) : [],
     summary: item.summary?.trim() || item.careerObjective?.trim() || "",
     age: Number(item.age ?? 25) || 25,
@@ -66,6 +68,7 @@ function uploadToProfile(item: CandidateUploadItem): CandidateProfile {
     cvScore: item.cvScore ?? completeness.cvScore,
     cvGrade: item.cvGrade ?? completeness.cvGrade,
     cvScoreLabel: item.cvScoreLabel ?? completeness.cvScoreLabel,
+    cvDetails,
   };
 }
 

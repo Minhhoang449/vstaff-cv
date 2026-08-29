@@ -71,6 +71,8 @@ model CandidateProfile {
   email            String           @default("")
   isPublic         Boolean          @default(false)
   originalFileUrl  String?
+  /** Kinh nghiệm, học vấn chi tiết, sở thích… từ CV trích xuất */
+  cvDetails        Json?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 

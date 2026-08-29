@@ -15,7 +15,7 @@ import { ProDropdown } from "@/components/ui/pro-dropdown";
 import { INDUSTRIES } from "@/data/industries";
 import { PROVINCES, getWards, shortProvinceName } from "@/data/vietnam-locations";
 import { GENDERS, LANGUAGES } from "@/lib/candidates-shared";
-import { DELIVERY_DAILY_CV_LIMIT } from "@/lib/delivery-job-types";
+import { DELIVERY_DAILY_CV_LIMIT, deliverySlotLabel } from "@/lib/delivery-job-types";
 
 const inputClass =
   "mt-1.5 flex h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 hover:border-zinc-300 focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20";
@@ -127,15 +127,19 @@ export function EmployerCreateListButton({
         }),
       });
       const data = (await res.json().catch(() => null)) as {
-        job?: { matchedCount?: number; id?: string };
+        job?: { matchedCount?: number; id?: string; lastRunAt?: string | null };
         error?: string;
       } | null;
       if (!res.ok || !data?.job) {
         setError(data?.error || "Không tạo được lệnh lọc.");
         return;
       }
+      const matched = data.job.matchedCount ?? 0;
+      const scheduled = !data.job.lastRunAt;
       setOkMsg(
-        `Đã tạo lệnh lọc — khớp ${data.job.matchedCount ?? 0} hồ sơ từ kho tìm ứng viên.`
+        scheduled
+          ? `Đã lên lịch — hệ thống sẽ khớp hồ sơ trong khung ${deliverySlotLabel(delivery as "morning" | "noon" | "afternoon" | "custom")}.`
+          : `Đã tạo lệnh lọc — khớp ${matched} hồ sơ trong khung giờ hiện tại.`
       );
       router.refresh();
       window.setTimeout(() => {
