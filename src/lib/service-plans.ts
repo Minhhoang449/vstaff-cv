@@ -130,9 +130,5 @@ export async function saveServicePlans(plans: EmployerPlan[]): Promise<EmployerP
     )
   );
 
-  return cleaned.map((p) => ({
-    ...p,
-    ...(p.cvPerDay != null ? { cvPerDay: p.cvPerDay } : {}),
-    ...(p.highlight ? { highlight: true } : {}),
-  }));
+  return cleaned.map((p) => toPlan(p));
 }

@@ -27,6 +27,11 @@
 .codebase-memory.json
 .cursor/
 
+# cPanel / local build artifacts
+.next-prod/
+next-webpack-*.tar.gz
+next-cpanel-*.tar.gz
+
 # debug
 npm-debug.log*
 yarn-debug.log*
