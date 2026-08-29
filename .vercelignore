@@ -1,0 +1,11 @@
+node_modules
+.next
+.next-prod
+.data
+coverage
+.git
+*.tar.gz
+scripts/all-ward.json
+scripts/all-province.json
+scripts/sapnhap2025-vn.json
+scripts/provinces.generated.json
