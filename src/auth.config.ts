@@ -16,7 +16,11 @@ declare module "next-auth" {
 /**
  * Edge-safe config (middleware). Credentials provider lives in auth.ts (Node).
  */
+export const authSecret =
+  process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+
 export const authConfig = {
+  secret: authSecret,
   providers: [],
   pages: {
     signIn: "/dang-nhap",
