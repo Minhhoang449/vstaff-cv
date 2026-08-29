@@ -1,5 +1,6 @@
 import { HomeFooter } from "@/components/home/home-footer";
 import { HomeHeader } from "@/components/home/home-header";
+import { GoogleAdSenseScript } from "@/components/ads/google-adsense-script";
 import { MaintenanceScreen } from "@/components/marketing/maintenance-screen";
 import { JsonLd } from "@/components/seo/json-ld";
 import { auth } from "@/auth";
@@ -14,6 +15,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   if (settings.maintenance && !bypass) {
     return (
       <div className="flex min-h-screen flex-col bg-[var(--background)]">
+        <GoogleAdSenseScript />
         <HomeHeader />
         <main className="flex-1">
           <MaintenanceScreen settings={settings} />
@@ -25,6 +27,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--background)]">
+      <GoogleAdSenseScript />
       <JsonLd data={siteNavigationJsonLd()} />
       <HomeHeader />
       <main id="main-content" className="flex-1">
