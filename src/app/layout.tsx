@@ -75,6 +75,9 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
   icons: {
     icon: [{ url: "/brand/vstaff-mark.png", type: "image/png" }],
     apple: [{ url: "/brand/vstaff-mark.png" }],
