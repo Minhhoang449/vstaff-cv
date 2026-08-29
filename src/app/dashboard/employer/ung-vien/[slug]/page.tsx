@@ -53,11 +53,13 @@ export default async function EmployerCandidateDetailPage({ params }: { params: 
         unlocked={unlocked}
         cvQuotaLabel={
           subscription
-            ? formatCvQuota(subscription.cvUsed, subscription.cvLimit, {
-                planId: subscription.planId,
-                cvUsedToday: subscription.cvUsedToday,
-              })
-            : undefined
+            ? formatCvQuota(
+                subscription.cvUsed,
+                subscription.cvLimit,
+                subscription.planId,
+                subscription.cvUsedToday
+              )
+            : ""
         }
       />
     </EmployerPageShell>
