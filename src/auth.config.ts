@@ -15,12 +15,9 @@ declare module "next-auth" {
 
 /**
  * Edge-safe config (middleware). Credentials provider lives in auth.ts (Node).
+ * Do NOT set `secret` here — Vercel bakes undefined at build time and blocks AUTH_SECRET fallback.
  */
-export const authSecret =
-  process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
-
 export const authConfig = {
-  secret: authSecret,
   providers: [],
   pages: {
     signIn: "/dang-nhap",
