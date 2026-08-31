@@ -14,7 +14,7 @@ import {
 import { ProDropdown } from "@/components/ui/pro-dropdown";
 import { INDUSTRIES } from "@/data/industries";
 import { PROVINCES, getWards, shortProvinceName } from "@/data/vietnam-locations";
-import { GENDERS, LANGUAGES } from "@/lib/candidates-shared";
+import { GENDERS, LANGUAGE_FILTER_OPTIONS } from "@/lib/candidates-shared";
 import { DELIVERY_DAILY_CV_LIMIT, deliverySlotLabel } from "@/lib/delivery-job-types";
 
 const inputClass =
@@ -86,7 +86,7 @@ export function EmployerCreateListButton({
 
   const languageOptions = [
     { value: "", label: "Tất cả ngôn ngữ" },
-    ...LANGUAGES.map((l) => ({ value: l, label: l })),
+    ...LANGUAGE_FILTER_OPTIONS,
   ];
 
   function reset() {

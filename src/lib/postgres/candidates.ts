@@ -5,6 +5,7 @@ import { evaluateCvCompleteness } from "@/lib/cv/cv-completeness";
 import { parseCvDetails, cvDetailsToDbJson } from "@/lib/cv/cv-details";
 import type { CandidateProfile as DbCandidate, Prisma } from "@/generated/prisma";
 import { getPrisma, isDatabaseReady } from "@/lib/db";
+import { languageFilterVariants } from "@/lib/language-filter";
 import {
   MAX_LIST_PAGE,
   PAGE_SIZE,
@@ -99,7 +100,10 @@ function buildWhere(params: CandidateListParams): Prisma.CandidateProfileWhereIn
   if (gender === "male" || gender === "female" || gender === "other") {
     where.gender = gender;
   }
-  if (language) where.languages = { has: language };
+  if (language) {
+    const variants = languageFilterVariants(language);
+    if (variants.length) where.languages = { hasSome: variants };
+  }
   if (education) where.education = education;
   if (workType) where.workType = workType;
   if (position) where.desiredPosition = { equals: position, mode: "insensitive" };

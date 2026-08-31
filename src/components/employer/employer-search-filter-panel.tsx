@@ -10,9 +10,10 @@ import {
   EXPERIENCE_FILTERS,
   GENDERS,
   JOB_SEEKING_STATUSES,
-  LANGUAGES,
+  LANGUAGE_FILTER_OPTIONS,
   WORK_TYPES,
 } from "@/lib/candidates-shared";
+import { canonicalLanguageFilter } from "@/lib/language-filter";
 import { ProDropdown } from "@/components/ui/pro-dropdown";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +61,9 @@ export function EmployerSearchFilterPanel({
   const [ward, setWard] = useState(values.ward ?? "");
   const [industry, setIndustry] = useState(values.industry ?? "");
   const [gender, setGender] = useState(values.gender ?? "");
-  const [language, setLanguage] = useState(values.language ?? "");
+  const [language, setLanguage] = useState(
+    () => canonicalLanguageFilter(values.language) ?? values.language ?? ""
+  );
   const [education, setEducation] = useState(values.education ?? "");
   const [experience, setExperience] = useState(values.experience ?? "");
   const [workType, setWorkType] = useState(values.workType ?? "");
@@ -112,10 +115,7 @@ export function EmployerSearchFilterPanel({
       ];
     if (key === "gender") return GENDERS.map((x) => ({ value: x.id, label: x.label }));
     if (key === "language")
-      return [
-        { value: "", label: "Tất cả" },
-        ...LANGUAGES.map((x) => ({ value: x, label: x })),
-      ];
+      return [{ value: "", label: "Tất cả" }, ...LANGUAGE_FILTER_OPTIONS];
     if (key === "education")
       return [
         { value: "", label: "Tất cả" },

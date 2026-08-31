@@ -2,6 +2,7 @@
 
 import { evaluateCvCompleteness } from "@/lib/cv/cv-completeness";
 import type { CandidateCvDetails } from "@/lib/cv/cv-details";
+import { LANGUAGES } from "@/lib/language-filter";
 
 export type UserRole = "EMPLOYER" | "CANDIDATE" | "ADMIN";
 
@@ -55,15 +56,7 @@ export const GENDERS: { id: CandidateGender | ""; label: string }[] = [
   { id: "other", label: "Khác" },
 ];
 
-export const LANGUAGES = [
-  "Tiếng Việt",
-  "English",
-  "日本語",
-  "中文",
-  "한국어",
-  "Français",
-  "Deutsch",
-] as const;
+export { LANGUAGE_FILTER_OPTIONS, LANGUAGES } from "@/lib/language-filter";
 
 export const EDUCATION_LEVELS = [
   "Trung cấp",

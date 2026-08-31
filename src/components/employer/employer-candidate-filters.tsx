@@ -9,7 +9,7 @@ import {
   DESIRED_POSITIONS,
   EDUCATION_LEVELS,
   GENDERS,
-  LANGUAGES,
+  LANGUAGE_FILTER_OPTIONS,
 } from "@/lib/candidates-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,9 +175,9 @@ export function EmployerCandidateFilters({
             defaultValue={values.language ?? ""}
           >
             <option value="">Tất cả</option>
-            {LANGUAGES.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang}
+            {LANGUAGE_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
